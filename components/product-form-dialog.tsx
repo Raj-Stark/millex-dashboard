@@ -91,39 +91,29 @@ export function ProductFormDialog({
     },
   });
 
+  // Editor initialization and change handlers
   useEffect(() => {
     if (open && editorRef.current && !isEditorReady) {
       const editorInstance = editorRef.current.getInstance();
       editorInstance.setMarkdown(form.getValues("description") || "");
       setIsEditorReady(true);
 
-      editorInstance.on("change", () => {
+      const handleEditorChange = () => {
         const markdown = editorInstance.getMarkdown();
         form.setValue("description", markdown, { shouldValidate: true });
-      });
+      };
+
+      editorInstance.on("change", handleEditorChange);
+
+      return () => {
+        editorInstance.off("change", handleEditorChange);
+      };
     } else if (!open) {
       setIsEditorReady(false);
     }
   }, [open, form, isEditorReady]);
 
-  useEffect(() => {
-    if (isEditorReady) {
-      const editorInstance = editorRef.current?.getInstance();
-      if (editorInstance) {
-        const handleEditorChange = () => {
-          const markdown = editorInstance.getMarkdown();
-          form.setValue("description", markdown, { shouldValidate: true });
-        };
-
-        editorInstance.on("change", handleEditorChange);
-
-        return () => {
-          editorInstance.off("change", handleEditorChange);
-        };
-      }
-    }
-  }, [isEditorReady, form]);
-
+  // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
       form.reset({
@@ -143,6 +133,7 @@ export function ProductFormDialog({
     }
   }, [open, product, form]);
 
+  // Fetch categories when dialog opens
   useEffect(() => {
     if (open) {
       fetchCategories();
@@ -178,6 +169,8 @@ export function ProductFormDialog({
 
   const removeImage = (index: number, isNew: boolean) => {
     if (isNew) {
+      // Revoke object URL before removing
+      URL.revokeObjectURL(URL.createObjectURL(filesToUpload[index]));
       setFilesToUpload((prev) => prev.filter((_, i) => i !== index));
     } else {
       setImages((prev) => prev.filter((_, i) => i !== index));
@@ -201,7 +194,8 @@ export function ProductFormDialog({
 
   const uploadImageToServer = async (file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append("myFile", file);
+    formData.append("file", file); // Changed from "myFile" to "file" (more standard)
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_LOCAL_URL}/product/uploadImage`,
       {
@@ -216,12 +210,21 @@ export function ProductFormDialog({
     }
 
     const data = await response.json();
-    return data.imageUrl;
+
+    if (!data.url) {
+      throw new Error("Invalid response format - missing URL");
+    }
+
+    return data.url;
   };
 
   const handleCancel = () => {
     form.reset();
     setImages(product?.images || []);
+    // Clean up object URLs
+    filesToUpload.forEach((file) =>
+      URL.revokeObjectURL(URL.createObjectURL(file))
+    );
     setFilesToUpload([]);
     setIsEditorReady(false);
     setOpen(false);
@@ -235,40 +238,22 @@ export function ProductFormDialog({
       const editorInstance = editorRef.current?.getInstance();
       const markdownContent = editorInstance?.getMarkdown() || "";
 
-      // const formData = new FormData();
-      // formData.append("name", values.name);
-      // formData.append("description", markdownContent);
-      // formData.append("price", values.price.toString());
-      // formData.append("categoryId", values.categoryId);
+      // First upload all new images
+      const uploadedUrls = await Promise.all(
+        filesToUpload.map((file) => uploadImageToServer(file))
+      );
 
-      // Upload new images
-      // const uploadedUrls = await Promise.all(
-      //   filesToUpload.map(async (file) => {
-      //     const imageUrl = await uploadImageToServer(file);
-      //     return imageUrl;
-      //   })
-      // );
+      // Then prepare the final form data
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("description", markdownContent);
+      formData.append("price", values.price.toString());
+      formData.append("categoryId", values.categoryId);
 
-      // Append all image URLs (both existing and newly uploaded)
-      // [...images, ...uploadedUrls].forEach((url) => {
-      //   formData.append("images", url);
-      // });
-
-      const bodyData = {
-        name: "Dummy Data",
-        price: 2599,
-        images: [
-          "https://res.cloudinary.com/dgmyvxbxa/image/upload/v1742573014/millex/ue4qlslrzfccawsjkwgw.png",
-          "https://res.cloudinary.com/dgmyvxbxa/image/upload/v1744769374/millex/q8wsnx0hh0wxm7lg6xch.png",
-        ],
-        description:
-          "## Description\n\n6W300 Rice Mill Cell with Shaft Fitting. This product is designed to fit the 6W300 model rice mill.\nThe 6W300 Rice Mill Cell with Shaft Fitting is an essential component for any rice milling operation.\nTrust in this high-quality product—its fitting is the perfect replacement part for your rice mill machine.\n\n### **6W300 Shaft/Cell**\n- **Brand:** Farm Gear\n- **Dimensions (L × R):** 285 × 280 mm (11.3 Inch)\n- **Uses:** 6W300\n- **Material:** CI casting\n- **Hole Sizes (mm):** 0.7, 0.8, 0.9, and 1\n- **Shape:** Round\n- **Weight:** 2.5 kg",
-        category: "67dd8352c09be1e4e70739a0",
-        featured: true,
-        freeShipping: false,
-        inventory: 100,
-        slug: "dummy-data",
-      };
+      // Append all image URLs (existing and new)
+      [...images, ...uploadedUrls].forEach((url) => {
+        formData.append("images", url);
+      });
 
       const url = product
         ? `${process.env.NEXT_PUBLIC_LOCAL_URL}/product/${product._id}`
@@ -278,7 +263,7 @@ export function ProductFormDialog({
       const response = await fetch(url, {
         method,
         credentials: "include",
-        body: JSON.stringify(bodyData),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -289,11 +274,21 @@ export function ProductFormDialog({
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error saving product:", error);
+      // You might want to add user feedback here
     } finally {
       setIsSubmitting(false);
       setIsUploading(false);
     }
   }
+
+  // Clean up object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      filesToUpload.forEach((file) =>
+        URL.revokeObjectURL(URL.createObjectURL(file))
+      );
+    };
+  }, [filesToUpload]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -312,6 +307,7 @@ export function ProductFormDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Name Field */}
             <FormField
               control={form.control}
               name="name"
@@ -326,6 +322,7 @@ export function ProductFormDialog({
               )}
             />
 
+            {/* Description Field */}
             <FormField
               control={form.control}
               name="description"
@@ -350,6 +347,7 @@ export function ProductFormDialog({
               )}
             />
 
+            {/* Price Field */}
             <FormField
               control={form.control}
               name="price"
@@ -371,6 +369,7 @@ export function ProductFormDialog({
               )}
             />
 
+            {/* Category Field */}
             <FormField
               control={form.control}
               name="categoryId"
@@ -414,6 +413,7 @@ export function ProductFormDialog({
               )}
             />
 
+            {/* Image Upload Section */}
             <div className="space-y-2">
               <FormLabel>Images</FormLabel>
               <input
@@ -444,8 +444,10 @@ export function ProductFormDialog({
                 </p>
               </div>
 
+              {/* Image Previews */}
               {(images.length > 0 || filesToUpload.length > 0) && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                  {/* Existing Images */}
                   {images.map((img, index) => (
                     <div key={`existing-${index}`} className="relative group">
                       <div className="aspect-square overflow-hidden rounded-md bg-gray-100">
@@ -467,6 +469,7 @@ export function ProductFormDialog({
                     </div>
                   ))}
 
+                  {/* New Images to be Uploaded */}
                   {filesToUpload.map((file, index) => (
                     <div key={`new-${index}`} className="relative group">
                       <div className="aspect-square overflow-hidden rounded-md bg-gray-100">
@@ -489,6 +492,7 @@ export function ProductFormDialog({
               )}
             </div>
 
+            {/* Form Actions */}
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
