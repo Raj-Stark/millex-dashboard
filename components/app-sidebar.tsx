@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   ArrowUpCircleIcon,
 } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Menu items.
 const items = [
@@ -65,10 +64,18 @@ export function AppSidebar() {
   const queryClient = useQueryClient();
 
   const handleLogout = () => {
+    // Clear authentication token
     document.cookie = "token=; Max-Age=0; path=/";
+
+    // Clear all storage
     localStorage.clear();
     sessionStorage.clear();
+
+    // Clear TanStack Query cache
+    queryClient.removeQueries();
     queryClient.clear();
+
+    // Redirect to login
     router.push("/login");
   };
 

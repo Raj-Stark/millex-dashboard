@@ -1,48 +1,41 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+type LoginInputs = {
+  email: string;
+  password: string;
+};
+
 export function LoginForm({
   className,
-  ...props
-}: React.ComponentProps<"form">) {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  onLogin,
+  error,
+  isLoading,
+}: {
+  className?: string;
+  onLogin: (data: LoginInputs) => void;
+  error?: string;
+  isLoading?: boolean;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInputs>();
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Invalid credentials");
-
-      router.push("/");
-    } catch (err) {
-      setError("Invalid email or password");
-    }
+  const onSubmit = (data: LoginInputs) => {
+    onLogin(data);
   };
 
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
-      {...props}
-      onSubmit={handleLogin}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -58,28 +51,29 @@ export function LoginForm({
             id="email"
             type="email"
             placeholder="m@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...register("email", { required: "Email is required" })}
           />
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
+          )}
         </div>
+
         <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-          </div>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            {...register("password", { required: "Password is required" })}
           />
+          {errors.password && (
+            <p className="text-sm text-red-500">{errors.password.message}</p>
+          )}
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <Button type="submit" className="w-full">
-          Login
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
       </div>
     </form>
