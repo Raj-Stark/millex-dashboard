@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ProductFormDialog } from "./components/ProductFormDialog";
 import ProductCard from "./components/ProductCard";
-import { productApi } from "../api/productApi";
+import { Product } from "@/app/types/product";
 
 export default function ProductsPage() {
   const {
@@ -15,11 +15,19 @@ export default function ProductsPage() {
     isError,
   } = useQuery({
     queryKey: ["products"],
-    queryFn: productApi.getProducts,
+    queryFn: async () =>
+      (
+        await (
+          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}/product`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          })
+        ).json()
+      ).products,
   });
 
   if (isLoading) return <p>Loading...</p>;
-
   if (isError) return <p>{(error as Error).message}</p>;
 
   return (
