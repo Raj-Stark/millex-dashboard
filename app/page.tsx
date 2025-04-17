@@ -1,16 +1,15 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+export default async function RootPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token");
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
-    </SidebarProvider>
-  );
+  if (token?.value) {
+    redirect("/home");
+  } else {
+    redirect("/login");
+  }
+
+  return null;
 }

@@ -34,7 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 const items = [
   {
     title: "Products",
-    url: "products",
+    url: "/home/products",
     icon: ShoppingCart,
   },
   {
