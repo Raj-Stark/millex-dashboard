@@ -1,9 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { productApi } from "../api/productApi";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useImageUpload } from "./useImageUpload";
-import { useEffect, useRef } from "react";
-import { Editor } from "@toast-ui/react-editor";
 import {
   Product,
   productFormSchema,
@@ -11,45 +9,80 @@ import {
 } from "@/app/types/product";
 
 export const useProductForm = (product?: Product) => {
+  const API_URL = process.env.NEXT_PUBLIC_LOCAL_URL;
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: product?.name || "",
+      slug: product?.slug || "",
       description: product?.description || "",
-      price: product?.price || 0,
+      price: product?.price ?? 0,
       categoryId: product?.category?._id || "",
+      inventory: product?.inventory ?? 0,
+      featured: product?.featured ?? false,
+      freeShipping: product?.freeShipping ?? false,
+      images: product?.images || [],
     },
   });
 
-  const editorRef = useRef<Editor>(null);
-  const imageUpload = useImageUpload(product?.images);
+  const { images, setImages, uploadImages, removeImage, isUploading } =
+    useImageUpload(product?.images);
 
-  const initializeEditor = () => {
-    if (editorRef.current) {
-      const editor = editorRef.current.getInstance();
-      editor.setMarkdown(form.getValues("description"));
-
-      editor.on("change", () => {
-        form.setValue("description", editor.getMarkdown());
+  const createProductMutation = useMutation({
+    mutationFn: async (data: ProductFormValues) => {
+      const res = await fetch("/api/create-product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
       });
-    }
-  };
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Product creation failed");
+      }
+
+      return res.json();
+    },
+  });
 
   const handleSubmit = async (values: ProductFormValues) => {
-    const uploadedImages = await imageUpload.uploadImages();
-    const allImages = [...imageUpload.images, ...uploadedImages];
-
-    return productApi.createOrUpdate(
-      { ...values, images: allImages },
-      product?._id
-    );
+    const payload: ProductFormValues = {
+      ...values,
+      images,
+    };
+    console.log("📦 Final Payload:", payload);
+    await createProductMutation.mutateAsync(payload);
   };
+
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategories,
+    error: categoryError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/category/`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      const data = await res.json();
+      return data.categories;
+    },
+  });
 
   return {
     form,
-    editorRef,
-    initializeEditor,
     handleSubmit,
-    ...imageUpload,
+    images,
+    setImages,
+    uploadImages,
+    removeImage,
+    isUploading,
+    categories,
+    isLoadingCategories,
+    categoryError,
   };
 };

@@ -1,55 +1,53 @@
 import { useState } from "react";
-import { productApi } from "../api/productApi";
 import { useMutation } from "@tanstack/react-query";
 
 export const useImageUpload = (initialImages: string[] = []) => {
   const [images, setImages] = useState<string[]>(initialImages);
-  const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { mutateAsync: uploadSingleImage, isPending: isUploading } =
-    useMutation({
-      mutationFn: (file: File) => productApi.uploadImage(file),
-    });
+  const { mutateAsync: uploadSingleImage } = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("myFile", file);
 
-  const handleImageUpload = (files: FileList, maxCount = 10) => {
-    const newFiles = Array.from(files).slice(
-      0,
-      maxCount - images.length - filesToUpload.length
+      const res = await fetch("/api/upload-image", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Failed to upload image");
+      return res.json();
+    },
+  });
+
+  const uploadImages = async (files: FileList): Promise<string[]> => {
+    setIsUploading(true);
+    const fileArray = Array.from(files);
+
+    const uploadedResponses = await Promise.all(
+      fileArray.map((file) => uploadSingleImage(file))
     );
-    setFilesToUpload((prev) => [...prev, ...newFiles]);
+
+    const uploadedUrls = uploadedResponses.flatMap((res) =>
+      Array.isArray(res) ? res.map((r) => r.imageUrl) : [res.imageUrl]
+    );
+
+    setImages((prev) => [...prev, ...uploadedUrls]);
+    setIsUploading(false);
+    return uploadedUrls;
   };
 
-  const removeImage = (index: number, isNew: boolean) => {
-    if (isNew) {
-      setFilesToUpload((prev) => prev.filter((_, i) => i !== index));
-    } else {
-      setImages((prev) => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const uploadImages = async () => {
-    if (filesToUpload.length === 0) return [];
-
-    try {
-      const uploadedUrls = await Promise.all(
-        filesToUpload.map((file) => uploadSingleImage(file))
-      );
-      setImages((prev) => [...prev, ...uploadedUrls]);
-      setFilesToUpload([]);
-      return uploadedUrls;
-    } catch (err) {
-      console.error("Image upload failed", err);
-      return [];
-    }
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return {
     images,
-    filesToUpload,
-    isUploading,
-    handleImageUpload,
-    removeImage,
-    uploadImages,
     setImages,
+    uploadImages,
+    removeImage,
+    isUploading,
+    uploadSingleImage,
   };
 };

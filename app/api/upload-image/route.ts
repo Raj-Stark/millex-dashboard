@@ -1,11 +1,46 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  console.log(req);
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get("myFile") as File;
 
-  const res = NextResponse.json("data", {
-    status: 200,
-  });
+    if (!file) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
 
-  return res;
+    // Grab cookies from the original request
+    const cookieHeader = req.headers.get("cookie");
+
+    // Convert File to Buffer and wrap in Blob
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const realFormData = new FormData();
+    realFormData.append(
+      "myFile",
+      new Blob([buffer], { type: file.type }),
+      file.name
+    );
+
+    const uploadRes = await fetch(
+      "http://193.203.160.16:8000/api/v1/product/uploadImage",
+      {
+        method: "POST",
+        body: realFormData,
+        headers: {
+          ...(cookieHeader ? { cookie: cookieHeader } : {}),
+        },
+        credentials: "include",
+      }
+    );
+
+    const uploadData = await uploadRes.json();
+
+    return NextResponse.json(uploadData, { status: uploadRes.status });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

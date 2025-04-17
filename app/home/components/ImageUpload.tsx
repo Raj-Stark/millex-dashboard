@@ -7,15 +7,13 @@ import { useRef } from "react";
 
 interface ProductImageUploadProps {
   images: string[];
-  filesToUpload: File[];
-  onUpload: (files: FileList) => void;
-  onRemove: (index: number, isNew: boolean) => void;
+  onUpload: (files: FileList) => Promise<string[]>;
+  onRemove: (index: number) => void;
   maxCount?: number;
 }
 
 export const ProductImageUpload = ({
   images,
-  filesToUpload,
   onUpload,
   onRemove,
   maxCount = 10,
@@ -24,13 +22,13 @@ export const ProductImageUpload = ({
 
   const triggerFileInput = () => fileInputRef.current?.click();
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files) onUpload(e.dataTransfer.files);
+    if (e.dataTransfer.files) await onUpload(e.dataTransfer.files);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) await onUpload(e.target.files);
   };
 
   return (
@@ -38,7 +36,7 @@ export const ProductImageUpload = ({
       <input
         type="file"
         ref={fileInputRef}
-        onChange={(e) => e.target.files && onUpload(e.target.files)}
+        onChange={handleFileChange}
         multiple
         accept="image/*"
         className="hidden"
@@ -48,35 +46,25 @@ export const ProductImageUpload = ({
         className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={triggerFileInput}
         onDrop={handleDrop}
-        onDragOver={handleDragOver}
+        onDragOver={(e) => e.preventDefault()}
       >
         <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">
           Drag and drop images here, or click to select files
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          {`Upload up to ${
-            maxCount - images.length - filesToUpload.length
-          } more images`}
+          {`Upload up to ${maxCount - images.length} more images`}
         </p>
       </div>
 
-      {(images.length > 0 || filesToUpload.length > 0) && (
+      {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
           {images.map((img, index) => (
             <ImagePreview
-              key={`existing-${index}`}
+              key={img}
               src={img}
-              alt={`Product image ${index + 1}`}
-              onRemove={() => onRemove(index, false)}
-            />
-          ))}
-          {filesToUpload.map((file, index) => (
-            <ImagePreview
-              key={`new-${index}`}
-              src={URL.createObjectURL(file)}
-              alt={`New image ${index + 1}`}
-              onRemove={() => onRemove(index, true)}
+              alt={`Uploaded image ${index + 1}`}
+              onRemove={() => onRemove(index)}
             />
           ))}
         </div>

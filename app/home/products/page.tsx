@@ -22,8 +22,6 @@ export default function ProductsPage() {
 
   if (isError) return <p>{(error as Error).message}</p>;
 
-  console.log(products);
-
   return (
     <>
       <div className="px-5">

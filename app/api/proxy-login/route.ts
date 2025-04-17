@@ -1,26 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  const body = await req.json();
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get("myFile") as File;
 
-  const response = await fetch("http://193.203.160.16:8000/api/v1/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    credentials: "include",
-  });
+    if (!file) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
 
-  const data = await response.json();
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-  const cookie = response.headers.get("set-cookie");
+    const realFormData = new FormData();
+    realFormData.append(
+      "myFile",
+      new Blob([buffer], { type: file.type }),
+      file.name
+    );
 
-  const res = NextResponse.json(data, {
-    status: response.status,
-  });
+    const uploadRes = await fetch(
+      "http://193.203.160.16:8000/api/v1/product/uploadImage",
+      {
+        method: "POST",
+        body: realFormData,
+      }
+    );
 
-  if (cookie) {
-    res.headers.set("set-cookie", cookie); // ✅ manually forward cookie to client
+    const uploadData = await uploadRes.json();
+
+    return NextResponse.json(uploadData, { status: uploadRes.status });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
-
-  return res;
 }

@@ -24,13 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useCategories } from "../../hooks/useCategories";
-import { useProductForm } from "../../hooks/useProductForm";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
 
-import { ProductEditor } from "./ProductEditor";
-import { useEffect, useState } from "react";
 import { ProductFormDialogProps, ProductFormValues } from "@/app/types/product";
 import { ProductImageUpload } from "../../components/ImageUpload";
+import { useProductForm } from "../../hooks/useProductForm";
 
 export const ProductFormDialog = ({
   product,
@@ -38,24 +38,22 @@ export const ProductFormDialog = ({
   children,
 }: ProductFormDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+
   const {
     form,
-    editorRef,
-    initializeEditor,
     handleSubmit,
     images,
-    filesToUpload,
-    handleImageUpload,
+    uploadImages,
     removeImage,
     isUploading,
+    categories,
+    isLoadingCategories,
   } = useProductForm(product);
 
-  useEffect(() => {
-    if (open) initializeEditor();
-  }, [open, initializeEditor]);
+  console.log(categories);
 
   const onSubmit = async (values: ProductFormValues) => {
+    console.log(values);
     try {
       await handleSubmit(values);
       setOpen(false);
@@ -80,6 +78,7 @@ export const ProductFormDialog = ({
             {product ? "Edit Product" : "Create Product"}
           </DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -89,7 +88,21 @@ export const ProductFormDialog = ({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Product name" {...field} />
+                    <Input {...field} placeholder="Product name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Slug</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="product-slug" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,10 +116,7 @@ export const ProductFormDialog = ({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <ProductEditor
-                      initialValue={field.value}
-                      onChange={field.onChange}
-                    />
+                    <Textarea {...field} className="min-h-[120px]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,10 +132,37 @@ export const ProductFormDialog = ({
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="0.00"
-                      {...field}
+                      value={
+                        field.value === undefined || isNaN(field.value)
+                          ? ""
+                          : field.value
+                      }
                       onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
+                        field.onChange(
+                          e.target.value === ""
+                            ? undefined
+                            : parseFloat(e.target.value)
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="inventory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Inventory</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
                       }
                     />
                   </FormControl>
@@ -141,27 +178,19 @@ export const ProductFormDialog = ({
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
                     value={field.value}
-                    disabled={isLoadingCategories || !categories?.length}
+                    onValueChange={field.onChange}
+                    disabled={isLoadingCategories}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isLoadingCategories
-                              ? "Loading categories..."
-                              : !categories?.length
-                              ? "No categories available"
-                              : "Select a category"
-                          }
-                        />
+                        <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories?.map((category) => (
-                        <SelectItem key={category._id} value={category._id}>
-                          {category.name}
+                      {categories.map((cat) => (
+                        <SelectItem key={cat._id} value={cat._id}>
+                          {cat.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -171,15 +200,66 @@ export const ProductFormDialog = ({
               )}
             />
 
+            {/* Image Upload */}
             <FormItem>
               <FormLabel>Images</FormLabel>
               <ProductImageUpload
                 images={images}
-                filesToUpload={filesToUpload}
-                onUpload={handleImageUpload}
-                onRemove={removeImage}
+                onUpload={async (files) => {
+                  const uploaded = await uploadImages(files);
+                  const updatedImages = [...images, ...uploaded];
+                  form.setValue("images", updatedImages, {
+                    shouldValidate: true,
+                  });
+                  return uploaded;
+                }}
+                onRemove={(index) => {
+                  const updated = images.filter((_, i) => i !== index);
+                  form.setValue("images", updated, { shouldValidate: true });
+                  removeImage(index);
+                }}
+              />
+
+              <FormField
+                control={form.control}
+                name="images"
+                render={() => <FormMessage />}
               />
             </FormItem>
+
+            <FormField
+              control={form.control}
+              name="featured"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
+                  <FormLabel>Featured</FormLabel>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="freeShipping"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
+                  <FormLabel>Free Shipping</FormLabel>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button
