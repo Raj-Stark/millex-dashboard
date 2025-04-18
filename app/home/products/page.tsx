@@ -27,21 +27,21 @@ export default function ProductsPage() {
       ).products,
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>{(error as Error).message}</p>;
+  if (isLoading) return <p className="px-10 py-3">Loading...</p>;
+  if (isError) return <p className="px-10 py-3">{(error as Error).message}</p>;
 
   return (
-    <>
+    <div className="px-5 py-3">
       <div className="px-5">
         <ProductFormDialog>
           <Button>Create Product</Button>
         </ProductFormDialog>
       </div>
       <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products?.map((product) => (
+        {products?.map((product: Product) => (
           <ProductCard key={product._id} product={product} />
         ))}
       </div>
-    </>
+    </div>
   );
 }

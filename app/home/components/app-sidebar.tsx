@@ -90,7 +90,7 @@ export function AppSidebar() {
             >
               <a href="/">
                 <img
-                  src="logo.png"
+                  src="/logo.png"
                   alt="Logo"
                   className="h-5 w-5 object-contain"
                 />
