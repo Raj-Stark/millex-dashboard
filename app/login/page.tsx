@@ -14,16 +14,22 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+        credentials: "include", // Important for cookies
         body: JSON.stringify(data),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Login failed");
+      }
+
       return res.json();
     },
-
     onSuccess: (data) => {
       router.push("/");
-      console.log(data);
+    },
+    onError: (error) => {
+      console.error("Login error:", error);
     },
   });
 

@@ -50,10 +50,8 @@ export const ProductFormDialog = ({
     isLoadingCategories,
   } = useProductForm(product);
 
-  console.log(categories);
-
   const onSubmit = async (values: ProductFormValues) => {
-    console.log(values);
+    console.log("Form Values:", values);
     try {
       await handleSubmit(values);
       setOpen(false);

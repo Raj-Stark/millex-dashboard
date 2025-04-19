@@ -1,6 +1,8 @@
+// In hooks/useProductForm.ts
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
 import { useImageUpload } from "./useImageUpload";
 import {
   Product,
@@ -10,6 +12,9 @@ import {
 
 export const useProductForm = (product?: Product) => {
   const API_URL = process.env.NEXT_PUBLIC_LOCAL_URL;
+  const isEditing = !!product; // Check if we are editing
+  const queryClient = useQueryClient(); // Get the query client instance
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
@@ -28,6 +33,7 @@ export const useProductForm = (product?: Product) => {
   const { images, setImages, uploadImages, removeImage, isUploading } =
     useImageUpload(product?.images);
 
+  // Mutation for creating a new product
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormValues) => {
       const res = await fetch("/api/create-product", {
@@ -46,15 +52,51 @@ export const useProductForm = (product?: Product) => {
 
       return res.json();
     },
+    onSuccess: () => {
+      // Invalidate the products query after successful creation
+      queryClient.invalidateQueries(["products"]);
+    },
+  });
+
+  // Mutation for updating an existing product
+  const updateProductMutation = useMutation({
+    mutationFn: async (data: ProductFormValues & { _id: string }) => {
+      const res = await fetch(`/api/update-product`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Product update failed");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      // Invalidate the products query after successful update
+      queryClient.invalidateQueries(["products"]);
+    },
   });
 
   const handleSubmit = async (values: ProductFormValues) => {
-    const payload: ProductFormValues = {
+    const payload: ProductFormValues & { _id?: string } = {
       ...values,
       images,
     };
-    console.log("📦 Final Payload:", payload);
-    await createProductMutation.mutateAsync(payload);
+
+    if (isEditing && product?._id) {
+      payload._id = product._id;
+      console.log("📦 Final Payload (Edit):", payload);
+      await updateProductMutation.mutateAsync(payload);
+    } else {
+      console.log("📦 Final Payload (Create):", payload);
+      await createProductMutation.mutateAsync(payload);
+    }
   };
 
   const {
