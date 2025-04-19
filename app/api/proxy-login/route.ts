@@ -2,35 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get("myFile") as File;
+    const body = await req.json();
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const realFormData = new FormData();
-    realFormData.append(
-      "myFile",
-      new Blob([buffer], { type: file.type }),
-      file.name
-    );
-
-    const uploadRes = await fetch(
-      "http://193.203.160.16:8000/api/v1/product/uploadImage",
+    // Forward the request to the backend login endpoint
+    const backendRes = await fetch(
+      "http://193.203.160.16:8000/api/v1/auth/login",
       {
         method: "POST",
-        body: realFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(body),
       }
     );
 
-    const uploadData = await uploadRes.json();
+    const data = await backendRes.json();
 
-    return NextResponse.json(uploadData, { status: uploadRes.status });
-  } catch (err) {
-    console.error("Upload error:", err);
+    // Create a NextResponse with the data
+    const response = NextResponse.json(data, { status: backendRes.status });
+
+    // Forward all Set-Cookie headers from the backend to the client
+    const setCookie = backendRes.headers.get("set-cookie");
+    if (setCookie) {
+      response.headers.set("set-cookie", setCookie);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Login failed:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
