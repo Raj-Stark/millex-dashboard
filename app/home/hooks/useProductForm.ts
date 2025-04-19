@@ -54,7 +54,7 @@ export const useProductForm = (product?: Product) => {
     },
     onSuccess: () => {
       // Invalidate the products query after successful creation
-      queryClient.invalidateQueries(["products"]);
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
@@ -79,22 +79,24 @@ export const useProductForm = (product?: Product) => {
     },
     onSuccess: () => {
       // Invalidate the products query after successful update
-      queryClient.invalidateQueries(["products"]);
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
   const handleSubmit = async (values: ProductFormValues) => {
-    const payload: ProductFormValues & { _id?: string } = {
+    const basePayload: ProductFormValues = {
       ...values,
       images,
     };
 
     if (isEditing && product?._id) {
-      payload._id = product._id;
-      await updateProductMutation.mutateAsync(payload);
+      const updatePayload: ProductFormValues & { _id: string } = {
+        ...basePayload,
+        _id: product._id,
+      };
+      await updateProductMutation.mutateAsync(updatePayload);
     } else {
-      console.log("📦 Final Payload (Create):", payload);
-      await createProductMutation.mutateAsync(payload);
+      await createProductMutation.mutateAsync(basePayload);
     }
   };
 
