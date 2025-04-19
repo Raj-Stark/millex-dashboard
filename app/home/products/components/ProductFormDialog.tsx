@@ -194,7 +194,7 @@ export const ProductFormDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map((cat) => (
+                      {categories.map((cat: any) => (
                         <SelectItem key={cat._id} value={cat._id}>
                           {cat.name}
                         </SelectItem>

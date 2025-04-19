@@ -91,7 +91,6 @@ export const useProductForm = (product?: Product) => {
 
     if (isEditing && product?._id) {
       payload._id = product._id;
-      console.log("📦 Final Payload (Edit):", payload);
       await updateProductMutation.mutateAsync(payload);
     } else {
       console.log("📦 Final Payload (Create):", payload);

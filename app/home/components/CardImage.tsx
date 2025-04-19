@@ -1,5 +1,5 @@
-// components/ProductImage.tsx
 import React from "react";
+import Image from "next/image";
 
 interface ProductImageProps {
   images?: string[];
@@ -10,11 +10,12 @@ const CardImage: React.FC<ProductImageProps> = ({ images, name }) => {
   if (images && images.length > 0) {
     return (
       <div className="relative w-full h-48 overflow-hidden">
-        <img
+        <Image
           src={images[0]}
           alt={name || "Product image"}
-          className="object-contain w-full h-full"
-          style={{ maxHeight: "100%" }}
+          fill
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, 33vw"
         />
       </div>
     );

@@ -4,11 +4,18 @@ import { GalleryVerticalEnd } from "lucide-react";
 import { LoginForm } from "@/app/login/components/login-form";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
+
   const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
+    mutationFn: async (data: LoginFormValues) => {
       const res = await fetch("/api/proxy-login", {
         method: "POST",
         headers: {
@@ -25,7 +32,7 @@ export default function LoginPage() {
 
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       router.push("/");
     },
     onError: (error) => {
@@ -33,7 +40,7 @@ export default function LoginPage() {
     },
   });
 
-  const handleLoginForm = (data) => {
+  const handleLoginForm = (data: LoginFormValues) => {
     loginMutation.mutate(data);
   };
 
@@ -58,11 +65,14 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
       <div className="bg-muted relative hidden lg:block">
-        <img
+        <Image
           src="/farmgear.png"
           alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          fill
+          className="object-cover dark:brightness-[0.2] dark:grayscale"
+          priority
         />
       </div>
     </div>
