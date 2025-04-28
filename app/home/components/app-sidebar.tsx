@@ -8,6 +8,8 @@ import {
   User2,
   ShoppingCart,
   ArrowUpCircleIcon,
+  Tags,
+  Truck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,14 +40,14 @@ const items = [
     icon: ShoppingCart,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Categories",
+    url: "/home/categories",
+    icon: Tags,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Orders",
+    url: "/home/orders",
+    icon: Truck,
   },
   {
     title: "Search",
@@ -109,7 +111,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
-                      {/* <item.icon /> */}
+                      <item.icon />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>

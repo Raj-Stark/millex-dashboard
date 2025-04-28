@@ -3,29 +3,29 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ProductFormDialog } from "./components/ProductFormDialog";
-import ProductCard from "./components/ProductCard";
-import { Product } from "@/app/types/product";
+import { CategorieFormDialog } from "./components/CategorieFormDialog";
+import CategoryCard from "./components/CategoryCard";
+import { Category } from "@/app/types/categoty";
 import Spinner from "../components/Spinner";
 
-export default function ProductsPage() {
+export default function CategoriesPage() {
   const {
-    data: products,
+    data: categories,
     error,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["categories"],
     queryFn: async () =>
       (
         await (
-          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}/product`, {
+          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}/category`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
           })
         ).json()
-      ).products,
+      ).categories,
   });
 
   if (isLoading) return <Spinner />;
@@ -33,14 +33,14 @@ export default function ProductsPage() {
 
   return (
     <div className="px-5 py-3">
-      <div className="px-5">
-        <ProductFormDialog>
-          <Button>Create Product</Button>
-        </ProductFormDialog>
+      <div className="px-5 ">
+        <CategorieFormDialog>
+          <Button>Create Category</Button>
+        </CategorieFormDialog>
       </div>
       <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products?.map((product: Product) => (
-          <ProductCard key={product._id} product={product} />
+        {categories?.map((category: Category) => (
+          <CategoryCard key={category._id} category={category} />
         ))}
       </div>
     </div>
