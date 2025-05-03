@@ -11,19 +11,12 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { ProductFormDialog } from "./product-form-dialog";
+import { ProductFormDialog } from "@/app/home/products/components/ProductFormDialog";
+
+import type { Product } from "@/app/types/product";
 
 interface ProductCardProps {
-  products: {
-    _id: string;
-    name: string;
-    price: number;
-    description?: string;
-    images: string[];
-    category?: {
-      name: string;
-    };
-  }[];
+  products: Product[];
 }
 
 function ProductCard({ products }: ProductCardProps) {
@@ -42,8 +35,9 @@ function ProductCard({ products }: ProductCardProps) {
         .split(" ")
         .filter((word) => word.length > 0)
         .slice(0, 15);
+
       return words.join(" ") + (words.length === 15 ? "..." : "");
-    } catch (error) {
+    } catch {
       return "Description unavailable";
     }
   };

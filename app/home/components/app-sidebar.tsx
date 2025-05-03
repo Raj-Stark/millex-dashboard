@@ -1,11 +1,20 @@
+"use client";
+
 import {
   ChevronUp,
+<<<<<<< HEAD
+=======
+  Inbox,
+>>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
   Search,
   Settings,
   User2,
   ShoppingCart,
+<<<<<<< HEAD
   Tags,
   Truck,
+=======
+>>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,6 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,8 +37,9 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 
-// Menu items.
+// Menu items
 const items = [
   {
     title: "Products",
@@ -62,18 +73,11 @@ export function AppSidebar() {
   const queryClient = useQueryClient();
 
   const handleLogout = () => {
-    // Clear authentication token
     document.cookie = "token=; Max-Age=0; path=/";
-
-    // Clear all storage
     localStorage.clear();
     sessionStorage.clear();
-
-    // Clear TanStack Query cache
     queryClient.removeQueries();
     queryClient.clear();
-
-    // Redirect to login
     router.push("/login");
   };
 
@@ -82,22 +86,22 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="/">
-                <img
+            <Link href="/" passHref>
+              <SidebarMenuButton className="flex items-center gap-2 data-[slot=sidebar-menu-button]:!p-1.5">
+                <Image
                   src="/logo.png"
                   alt="Logo"
-                  className="h-5 w-5 object-contain"
+                  width={20}
+                  height={20}
+                  className="object-contain"
                 />
                 <span className="text-base font-semibold">FarmGear</span>
-              </a>
-            </SidebarMenuButton>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
@@ -105,18 +109,25 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
+<<<<<<< HEAD
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
                       <item.icon />
+=======
+                  <Link href={item.url} passHref>
+                    <SidebarMenuButton className="flex items-center gap-2">
+                      {/* <item.icon /> */}
+>>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
                       <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
+                    </SidebarMenuButton>
+                  </Link>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>

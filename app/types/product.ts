@@ -21,15 +21,13 @@ export interface Product {
   price: number;
   description: string;
   images: string[];
+  inventory: number;
   category: {
     _id: string;
     name: string;
   };
-  inventory: number;
   featured: boolean;
   freeShipping: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface ProductFormDialogProps {

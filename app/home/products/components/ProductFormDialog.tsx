@@ -131,14 +131,14 @@ export const ProductFormDialog = ({
                     <Input
                       type="number"
                       value={
-                        field.value === undefined || isNaN(field.value)
+                        field.value === undefined || field.value === null
                           ? ""
                           : field.value
                       }
                       onChange={(e) =>
                         field.onChange(
                           e.target.value === ""
-                            ? undefined
+                            ? null
                             : parseFloat(e.target.value)
                         )
                       }
@@ -158,9 +158,17 @@ export const ProductFormDialog = ({
                   <FormControl>
                     <Input
                       type="number"
-                      value={field.value ?? ""}
+                      value={
+                        field.value === undefined || field.value === null
+                          ? ""
+                          : field.value
+                      }
                       onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)
+                        field.onChange(
+                          e.target.value === ""
+                            ? null
+                            : parseInt(e.target.value, 10)
+                        )
                       }
                     />
                   </FormControl>
@@ -186,7 +194,7 @@ export const ProductFormDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map((cat) => (
+                      {categories.map((cat: any) => (
                         <SelectItem key={cat._id} value={cat._id}>
                           {cat.name}
                         </SelectItem>
