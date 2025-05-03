@@ -104,7 +104,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <Link href={item.url} passHref>
                     <SidebarMenuButton className="flex items-center gap-2">
-                      {/* <item.icon /> */}
+                      <item.icon />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </Link>
