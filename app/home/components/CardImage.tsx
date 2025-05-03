@@ -1,13 +1,19 @@
 import React from "react";
 import Image from "next/image";
 
-interface ProductImageProps {
-  images?: string[];
-  name?: string;
+interface CardImageProps {
+  images: string | string[];
+  name: string;
 }
 
-const CardImage: React.FC<ProductImageProps> = ({ images, name }) => {
-  if (images && images.length > 0) {
+const CardImage: React.FC<CardImageProps> = ({ images, name }) => {
+  const imageArray = images
+    ? typeof images === "string"
+      ? [images]
+      : images
+    : [];
+
+  if (imageArray.length > 0) {
     return (
       <div className="relative w-full h-48 overflow-hidden">
         <Image
@@ -19,13 +25,13 @@ const CardImage: React.FC<ProductImageProps> = ({ images, name }) => {
         />
       </div>
     );
-  } else {
-    return (
-      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-        <span>No Image</span>
-      </div>
-    );
   }
+
+  return (
+    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+      <span>No Image</span>
+    </div>
+  );
 };
 
 export default CardImage;

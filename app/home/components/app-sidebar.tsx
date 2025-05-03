@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  Calendar,
   ChevronUp,
-  Inbox,
   Search,
   Settings,
   User2,
   ShoppingCart,
+  Tags,
+  Truck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,14 +40,14 @@ const items = [
     icon: ShoppingCart,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Categories",
+    url: "/home/categories",
+    icon: Tags,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Orders",
+    url: "/home/orders",
+    icon: Truck,
   },
   {
     title: "Search",
