@@ -3,7 +3,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { CategorieFormDialog } from "./components/CategorieFormDialog";
 import CategoryCard from "./components/CategoryCard";
 import { Category } from "@/app/types/categoty";
 import Spinner from "../components/Spinner";
@@ -34,9 +33,7 @@ export default function CategoriesPage() {
   return (
     <div className="px-5 py-3">
       <div className="px-5 ">
-        <CategorieFormDialog>
-          <Button>Create Category</Button>
-        </CategorieFormDialog>
+        <Button>Create Category</Button>
       </div>
       <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories?.map((category: Category) => (

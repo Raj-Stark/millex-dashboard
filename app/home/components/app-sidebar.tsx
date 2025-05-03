@@ -1,13 +1,9 @@
 import {
-  Calendar,
   ChevronUp,
-  Home,
-  Inbox,
   Search,
   Settings,
   User2,
   ShoppingCart,
-  ArrowUpCircleIcon,
   Tags,
   Truck,
 } from "lucide-react";

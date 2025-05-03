@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -11,7 +10,6 @@ import React from "react";
 import CardImage from "../../components/CardImage";
 import AlertBox from "../../components/AlertBox";
 import { useDeleteProduct } from "../../hooks/useDeleteProduc";
-import { CategorieFormDialog } from "./CategorieFormDialog";
 import { Category } from "@/app/types/categoty";
 
 interface CategoryCardProps {
@@ -43,9 +41,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       </CardContent>
 
       <CardFooter className="border-t gap-3 ">
-        <CategorieFormDialog>
-          <Button className="bg-green-600 hover:bg-green-500">Edit</Button>
-        </CategorieFormDialog>
+        <Button className="bg-green-600 hover:bg-green-500">Edit</Button>
 
         <AlertBox
           description={productDescription}
