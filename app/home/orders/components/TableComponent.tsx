@@ -16,6 +16,7 @@ import { formatDate } from "@/lib/utils";
 
 interface TableComponentProps {
   orders: Order[];
+  onRowClick: (id: string) => void;
 }
 
 export default function TableComponent({ orders }: TableComponentProps) {

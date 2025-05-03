@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Order } from "@/app/types/order";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 
 interface OrderDetailDialogProps {

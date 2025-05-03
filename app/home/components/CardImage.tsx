@@ -2,8 +2,8 @@ import React from "react";
 import Image from "next/image";
 
 interface CardImageProps {
-  images?: string | string[];
-  name?: string;
+  images: string | string[];
+  name: string;
 }
 
 const CardImage: React.FC<CardImageProps> = ({ images, name }) => {

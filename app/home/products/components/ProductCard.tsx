@@ -39,7 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         .slice(0, 15);
       return words.join(" ") + (words.length === 15 ? "..." : "");
     } catch (error) {
-      return "Description unavailable";
+      throw new Error(`Something went wrong ${error}`);
     }
   };
 
