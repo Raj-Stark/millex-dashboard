@@ -2,19 +2,12 @@
 
 import {
   ChevronUp,
-<<<<<<< HEAD
-=======
-  Inbox,
->>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
   Search,
   Settings,
   User2,
   ShoppingCart,
-<<<<<<< HEAD
   Tags,
   Truck,
-=======
->>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
 } from "lucide-react";
 import {
   Sidebar,
@@ -109,15 +102,9 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-<<<<<<< HEAD
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-=======
                   <Link href={item.url} passHref>
                     <SidebarMenuButton className="flex items-center gap-2">
                       {/* <item.icon /> */}
->>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </Link>

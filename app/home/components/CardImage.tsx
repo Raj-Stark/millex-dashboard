@@ -16,19 +16,12 @@ const CardImage: React.FC<CardImageProps> = ({ images, name }) => {
   if (imageArray.length > 0) {
     return (
       <div className="relative w-full h-48 overflow-hidden">
-<<<<<<< HEAD
-        <img
-          src={imageArray[0]}
-          alt={name || "Image"}
-          className="object-contain w-full h-full"
-=======
         <Image
           src={images[0]}
           alt={name || "Product image"}
           fill
           className="object-contain"
           sizes="(max-width: 768px) 100vw, 33vw"
->>>>>>> 30e94422e9107fa34a972da5739f71242dd45314
         />
       </div>
     );
