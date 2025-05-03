@@ -17,7 +17,7 @@ const CardImage: React.FC<CardImageProps> = ({ images, name }) => {
     return (
       <div className="relative w-full h-48 overflow-hidden">
         <Image
-          src={images[0]}
+          src={imageArray[0]}
           alt={name || "Product image"}
           fill
           className="object-contain"

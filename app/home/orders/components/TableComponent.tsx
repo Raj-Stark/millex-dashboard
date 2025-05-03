@@ -53,9 +53,7 @@ export default function TableComponent({ orders }: TableComponentProps) {
                 className="cursor-pointer hover:bg-gray-50"
                 onClick={() => handleRowClick(order)}
               >
-                <TableCell className="font-medium">
-                  #{order._id.slice(-6).toUpperCase()}
-                </TableCell>
+                <TableCell className="font-medium">{order._id}</TableCell>
                 <TableCell>{formatDate(order.createdAt)}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">

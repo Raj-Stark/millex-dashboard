@@ -25,9 +25,7 @@ export function OrderDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            Order Details #{order._id.slice(-6).toUpperCase()}
-          </DialogTitle>
+          <DialogTitle>Order Details {order._id}</DialogTitle>
           <DialogDescription>
             Created on {formatDate(order.createdAt)}
           </DialogDescription>

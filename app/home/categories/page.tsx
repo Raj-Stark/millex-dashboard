@@ -31,7 +31,7 @@ export default function CategoriesPage() {
   if (isError) return <p className="px-10 py-3">{(error as Error).message}</p>;
 
   return (
-    <div className="px-5 py-3">
+    <div className="px-5 py-3 w-full">
       <div className="px-5 ">
         <Button>Create Category</Button>
       </div>
