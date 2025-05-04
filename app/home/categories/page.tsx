@@ -18,7 +18,7 @@ export default function CategoriesPage() {
     queryFn: async () =>
       (
         await (
-          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}/category`, {
+          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}category`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

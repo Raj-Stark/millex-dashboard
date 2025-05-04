@@ -1,48 +1,48 @@
 "use client";
 
 import { GalleryVerticalEnd } from "lucide-react";
-import { LoginForm } from "@/app/login/components/login-form";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
+import { useGoogleLogin } from "@react-oauth/google";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormValues) => {
-      const res = await fetch("/api/proxy-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // Important for cookies
-        body: JSON.stringify(data),
-      });
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async (codeResponse) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_LOCAL_URL}auth/admin/google-login`,
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Login failed");
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ code: codeResponse.code }),
+          }
+        );
+
+        if (!res.ok) {
+          const error = await res.json();
+          toast.error(error?.msg || "Google login failed");
+          return;
+        }
+
+        toast.success("Logged in successfully!");
+        router.push("/");
+      } catch (err) {
+        console.error("Google login failed", err);
+        toast.error("Google login failed");
       }
-
-      return res.json();
     },
-    onSuccess: () => {
-      router.push("/");
-    },
-    onError: (error) => {
-      console.error("Login error:", error);
+    onError: () => {
+      toast.error("Google login failed");
     },
   });
-
-  const handleLoginForm = (data: LoginFormValues) => {
-    loginMutation.mutate(data);
-  };
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -52,17 +52,16 @@ export default function LoginPage() {
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            Acme Inc.
+            Dashboard Admin
           </a>
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <LoginForm
-              onLogin={handleLoginForm}
-              error={loginMutation.error?.message}
-              isLoading={loginMutation.isPending}
-            />
-          </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+          <button
+            onClick={() => googleLogin()}
+            className="mt-2 w-full max-w-xs rounded border border-black px-4 py-2 text-sm font-medium"
+          >
+            Continue with Google
+          </button>
         </div>
       </div>
 

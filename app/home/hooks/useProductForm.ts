@@ -36,7 +36,7 @@ export const useProductForm = (product?: Product) => {
   // Mutation for creating a new product
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormValues) => {
-      const res = await fetch("/api/create-product", {
+      const res = await fetch("api/create-product", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export const useProductForm = (product?: Product) => {
   // Mutation for updating an existing product
   const updateProductMutation = useMutation({
     mutationFn: async (data: ProductFormValues & { _id: string }) => {
-      const res = await fetch(`/api/update-product`, {
+      const res = await fetch(`api/update-product`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export const useProductForm = (product?: Product) => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/category/`, {
+      const res = await fetch(`${API_URL}category/`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch categories");

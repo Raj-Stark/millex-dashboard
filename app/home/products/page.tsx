@@ -19,7 +19,7 @@ export default function ProductsPage() {
     queryFn: async () =>
       (
         await (
-          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}/product`, {
+          await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}product`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

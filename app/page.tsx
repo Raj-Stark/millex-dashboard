@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 
 export default async function RootPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token");
+  const hasCookie = cookieStore.has("token");
 
-  if (token?.value) {
+  if (hasCookie) {
     redirect("/home");
   } else {
     redirect("/login");
