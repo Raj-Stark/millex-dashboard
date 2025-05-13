@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 export const useImageUpload = (initialImages: string[] = []) => {
   const [images, setImages] = useState<string[]>(initialImages);
@@ -16,7 +17,11 @@ export const useImageUpload = (initialImages: string[] = []) => {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to upload image");
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to upload image");
+      }
+
       return res.json();
     },
   });
@@ -25,21 +30,39 @@ export const useImageUpload = (initialImages: string[] = []) => {
     setIsUploading(true);
     const fileArray = Array.from(files);
 
-    const uploadedResponses = await Promise.all(
-      fileArray.map((file) => uploadSingleImage(file))
-    );
+    try {
+      const uploadedResponses = await Promise.all(
+        fileArray.map((file) =>
+          uploadSingleImage(file).catch((err) => {
+            toast.error(`Failed to upload ${file.name}`);
+            return null;
+          })
+        )
+      );
 
-    const uploadedUrls = uploadedResponses.flatMap((res) =>
-      Array.isArray(res) ? res.map((r) => r.imageUrl) : [res.imageUrl]
-    );
+      const uploadedUrls = uploadedResponses
+        .filter((res) => res !== null)
+        .flatMap((res) =>
+          Array.isArray(res) ? res.map((r) => r.imageUrl) : [res.imageUrl]
+        );
 
-    setImages((prev) => [...prev, ...uploadedUrls]);
-    setIsUploading(false);
-    return uploadedUrls;
+      if (uploadedUrls.length > 0) {
+        toast.success("Images uploaded successfully!");
+      }
+
+      setImages((prev) => [...prev, ...uploadedUrls]);
+      return uploadedUrls;
+    } catch (err) {
+      toast.error("An unexpected error occurred during upload.");
+      return [];
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Image removed");
   };
 
   return {
