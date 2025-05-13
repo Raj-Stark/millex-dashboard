@@ -7,6 +7,7 @@ import {
   productFormSchema,
   ProductFormValues,
 } from "@/app/types/product";
+import { toast } from "react-toastify";
 
 export const useProductForm = (product?: Product) => {
   const API_URL = process.env.NEXT_PUBLIC_LOCAL_URL || "";
@@ -51,6 +52,10 @@ export const useProductForm = (product?: Product) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product created successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Product creation failed.");
     },
   });
 
@@ -74,6 +79,10 @@ export const useProductForm = (product?: Product) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Product update failed.");
     },
   });
 
@@ -83,13 +92,17 @@ export const useProductForm = (product?: Product) => {
       images,
     };
 
-    if (isEditing && product?._id) {
-      await updateProductMutation.mutateAsync({
-        ...basePayload,
-        _id: product._id,
-      });
-    } else {
-      await createProductMutation.mutateAsync(basePayload);
+    try {
+      if (isEditing && product?._id) {
+        await updateProductMutation.mutateAsync({
+          ...basePayload,
+          _id: product._id,
+        });
+      } else {
+        await createProductMutation.mutateAsync(basePayload);
+      }
+    } catch (error) {
+      // Error already handled in mutation `onError`
     }
   };
 
