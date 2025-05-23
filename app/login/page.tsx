@@ -12,7 +12,6 @@ export default function LoginPage() {
   const googleLogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
-      console.log(codeResponse);
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_LOCAL_URL}auth/admin/google-login`,

@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const cookieHeader = req.headers.get("cookie");
 
     // Send product data to the actual backend API
-    const backendRes = await fetch("http://193.203.160.16:8000/api/v1/order", {
+    const backendRes = await fetch(`${process.env.LOCAL_BACKEND_URL}/order`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

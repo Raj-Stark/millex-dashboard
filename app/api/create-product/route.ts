@@ -8,18 +8,15 @@ export async function POST(req: NextRequest) {
     const cookieHeader = req.headers.get("cookie");
 
     // Send product data to the actual backend API
-    const backendRes = await fetch(
-      "http://193.203.160.16:8000/api/v1/product",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(cookieHeader ? { cookie: cookieHeader } : {}),
-        },
-        credentials: "include",
-        body: JSON.stringify(body),
-      }
-    );
+    const backendRes = await fetch(`${process.env.LOCAL_BACKEND_URL}/product`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
 
     const data = await backendRes.json();
     return NextResponse.json(data, { status: backendRes.status });
