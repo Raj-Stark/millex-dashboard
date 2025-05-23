@@ -26,7 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ProductFormDialogProps, ProductFormValues } from "@/app/types/product";
 import { ProductImageUpload } from "../../components/ImageUpload";
@@ -38,6 +38,7 @@ export const ProductFormDialog = ({
   children,
 }: ProductFormDialogProps) => {
   const [open, setOpen] = useState(false);
+  const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
 
   const {
     form,
@@ -48,12 +49,23 @@ export const ProductFormDialog = ({
     isUploading,
     categories,
     isLoadingCategories,
+    subcategories,
+    isLoadingSubcategories,
   } = useProductForm(product);
 
+  // Pre-fill parent category when editing
+  useEffect(() => {
+    if (product?.category?._id) {
+      setParentCategoryId(product.category._id);
+    }
+  }, [product]);
+
   const onSubmit = async (values: ProductFormValues) => {
-    console.log("Form Values:", values);
     try {
-      await handleSubmit(values);
+      await handleSubmit({
+        ...values,
+        categoryId: parentCategoryId || values.categoryId,
+      });
       setOpen(false);
       onSuccess?.();
     } catch (error) {
@@ -79,6 +91,7 @@ export const ProductFormDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Name */}
             <FormField
               control={form.control}
               name="name"
@@ -93,6 +106,7 @@ export const ProductFormDialog = ({
               )}
             />
 
+            {/* Slug */}
             <FormField
               control={form.control}
               name="slug"
@@ -107,6 +121,7 @@ export const ProductFormDialog = ({
               )}
             />
 
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -121,92 +136,118 @@ export const ProductFormDialog = ({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      value={
-                        field.value === undefined || field.value === null
-                          ? ""
-                          : field.value
-                      }
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="inventory"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Inventory</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      value={
-                        field.value === undefined || field.value === null
-                          ? ""
-                          : field.value
-                      }
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? null
-                            : parseInt(e.target.value, 10)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isLoadingCategories}
-                  >
+            {/* Price + Inventory */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
+                      <Input
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? null
+                              : parseFloat(e.target.value)
+                          )
+                        }
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {categories.map((cat: any) => (
-                        <SelectItem key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Image Upload */}
+              <FormField
+                control={form.control}
+                name="inventory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Inventory</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? null
+                              : parseInt(e.target.value, 10)
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Category + Subcategory */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select
+                  value={parentCategoryId ?? ""}
+                  onValueChange={(value) => {
+                    setParentCategoryId(value);
+                    form.setValue("categoryId", value); // for fallback
+                    form.setValue("subCategoryId", ""); // reset subcategory
+                  }}
+                  disabled={isLoadingCategories}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((cat: any) => (
+                      <SelectItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {subcategories.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="subCategoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Subcategory</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isLoadingSubcategories}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a subcategory" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {subcategories.map((sub: any) => (
+                              <SelectItem key={sub._id} value={sub._id}>
+                                {sub.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </FormItem>
+            </div>
+
+            {/* Images */}
             <FormItem>
               <FormLabel>Images</FormLabel>
               <ProductImageUpload
@@ -225,7 +266,6 @@ export const ProductFormDialog = ({
                   removeImage(index);
                 }}
               />
-
               <FormField
                 control={form.control}
                 name="images"
@@ -233,40 +273,44 @@ export const ProductFormDialog = ({
               />
             </FormItem>
 
-            <FormField
-              control={form.control}
-              name="featured"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-2">
-                  <FormLabel>Featured</FormLabel>
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Featured + Free Shipping */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="featured"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-2">
+                    <FormLabel>Featured</FormLabel>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="freeShipping"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-2">
-                  <FormLabel>Free Shipping</FormLabel>
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="freeShipping"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-2">
+                    <FormLabel>Free Shipping</FormLabel>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
+            {/* Submit Buttons */}
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"

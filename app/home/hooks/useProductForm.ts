@@ -22,6 +22,7 @@ export const useProductForm = (product?: Product) => {
       description: product?.description || "",
       price: product?.price ?? 0,
       categoryId: product?.category?._id || "",
+      subCategoryId: product?.subcategory?._id || "",
       inventory: product?.inventory ?? 0,
       featured: product?.featured ?? false,
       freeShipping: product?.freeShipping ?? false,
@@ -36,18 +37,14 @@ export const useProductForm = (product?: Product) => {
     mutationFn: async (data: ProductFormValues) => {
       const res = await fetch(`${API_URL}product`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(data),
       });
-
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Product creation failed");
       }
-
       return res.json();
     },
     onSuccess: () => {
@@ -63,18 +60,14 @@ export const useProductForm = (product?: Product) => {
     mutationFn: async (data: ProductFormValues & { _id: string }) => {
       const res = await fetch(`${API_URL}product/${data._id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(data),
       });
-
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Product update failed");
       }
-
       return res.json();
     },
     onSuccess: () => {
@@ -85,6 +78,8 @@ export const useProductForm = (product?: Product) => {
       toast.error(error.message || "Product update failed.");
     },
   });
+
+  const categoryIdWatched = form.watch("categoryId");
 
   const handleSubmit = async (values: ProductFormValues) => {
     const basePayload: ProductFormValues = {
@@ -101,8 +96,8 @@ export const useProductForm = (product?: Product) => {
       } else {
         await createProductMutation.mutateAsync(basePayload);
       }
-    } catch (error) {
-      // Error already handled in mutation `onError`
+    } catch {
+      // handled by onError
     }
   };
 
@@ -113,7 +108,7 @@ export const useProductForm = (product?: Product) => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}category/`, {
+      const res = await fetch(`${API_URL}categories`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch categories");
@@ -121,6 +116,27 @@ export const useProductForm = (product?: Product) => {
       return data.categories;
     },
   });
+
+  const { data: subcategories = [], isLoading: isLoadingSubcategories } =
+    useQuery({
+      queryKey: ["subcategories", categoryIdWatched],
+      queryFn: async () => {
+        const selectedCategory = categories.find(
+          (cat: any) => cat._id === categoryIdWatched
+        );
+        if (!selectedCategory?.slug) return [];
+        const res = await fetch(
+          `${API_URL}categories/parent/${selectedCategory.slug}`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.categories;
+      },
+      enabled: !!categoryIdWatched,
+    });
 
   return {
     form,
@@ -133,5 +149,7 @@ export const useProductForm = (product?: Product) => {
     categories,
     isLoadingCategories,
     categoryError,
+    subcategories,
+    isLoadingSubcategories,
   };
 };

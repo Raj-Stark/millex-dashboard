@@ -65,13 +65,24 @@ export function AppSidebar() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    document.cookie = "token=; Max-Age=0; path=/";
-    localStorage.clear();
-    sessionStorage.clear();
-    queryClient.removeQueries();
-    queryClient.clear();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_LOCAL_URL}auth/logout`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      // Clear local state
+      document.cookie = "token=; Max-Age=0; path=/";
+      localStorage.clear();
+      sessionStorage.clear();
+      queryClient.removeQueries();
+      queryClient.clear();
+
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

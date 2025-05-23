@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,30 +12,45 @@ import {
 import React from "react";
 import CardImage from "../../components/CardImage";
 import AlertBox from "../../components/AlertBox";
-import { useDeleteProduct } from "../../hooks/useDeleteProduc";
 import { Category } from "@/app/types/categoty";
+import { useDeleteCategory } from "../hooks/useDeleteCategory";
+import { SubCategoryFormDialog } from "../[subcategories]/components/SubcategoryFormDialog";
 
 interface CategoryCardProps {
   category: Category;
+  parentSlug?: string;
+  onSuccess?: () => void;
 }
 
-export default function CategoryCard({ category }: CategoryCardProps) {
-  const { mutate: deleteProduct, isPending } = useDeleteProduct();
+export default function CategoryCard({
+  category,
+  parentSlug,
+  onSuccess,
+}: CategoryCardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { mutate: deleteCategory, isPending } = useDeleteCategory();
 
   const productDescription =
-    "This action cannot be undone. This will permanently delete your product and remove your data from our servers.";
+    "This action cannot be undone. This will permanently delete your category and remove your data from our servers.";
+
+  const handleCardClick = () => {
+    if (pathname === "/home/categories") {
+      router.push(`/home/categories/${category.slug}`);
+    }
+  };
 
   return (
-    <Card key={category._id} className=" hover:shadow-xl transition-all">
-      <CardHeader>
+    <Card className="hover:shadow-xl transition-all cursor-pointer">
+      <CardHeader onClick={handleCardClick}>
         <CardImage images={category.image} name={category.name} />
       </CardHeader>
 
-      <CardContent className="">
+      <CardContent>
         <CardTitle className="text-lg font-semibold">
-          {category.name || "Untitled Product"}
+          {category.name || "Untitled Category"}
         </CardTitle>
-        <div className="text-xs mt-2 ">
+        <div className="text-xs mt-2">
           <span className="font-semibold text-muted-foreground">
             Category Slug:
           </span>{" "}
@@ -40,14 +58,28 @@ export default function CategoryCard({ category }: CategoryCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="border-t gap-3 ">
-        <Button className="bg-green-600 hover:bg-green-500">Edit</Button>
+      <CardFooter className="border-t gap-3 z-10 relative">
+        <SubCategoryFormDialog
+          parentSlug={parentSlug || category.slug}
+          subcategory={category}
+          onSuccess={onSuccess}
+        >
+          <Button
+            className="bg-green-600 hover:bg-green-500"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Edit
+          </Button>
+        </SubCategoryFormDialog>
 
         <AlertBox
           description={productDescription}
-          onConfirm={() => deleteProduct(category._id)}
+          onConfirm={() => deleteCategory(category._id)}
         >
-          <Button className="bg-red-600 hover:bg-red-500">
+          <Button
+            className="bg-red-600 hover:bg-red-500"
+            onClick={(e) => e.stopPropagation()}
+          >
             {isPending ? "Deleting..." : "Delete"}
           </Button>
         </AlertBox>
