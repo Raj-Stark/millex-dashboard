@@ -40,7 +40,7 @@ export default function CategoriesPage() {
     );
 
   return (
-    <div className="w-full px-5 py-3">
+    <div className="w-full px-10 py-3">
       <div className="mb-6">
         <Button>Create Category</Button>
       </div>
