@@ -13,6 +13,17 @@ export interface Order {
     _id: string;
   }[];
   status: string;
-  user: string;
+  user: {
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zip: string;
+      country: string;
+    };
+    name: string;
+    email: string;
+    phone: string;
+  };
   createdAt: string;
 }

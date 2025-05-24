@@ -34,8 +34,40 @@ export function OrderDetailDialog({
         <div className="space-y-4">
           <div>
             <h3 className="font-medium">Customer</h3>
-            {/* <p>{order.customer.name}</p>
-            <p>{order.customer.email}</p> */}
+            <p>
+              <span className="font-semibold px-2">Name: </span>
+              {order.user.name}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">Email: </span>
+              {order.user.email}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">Phone no: </span>
+              {order.user.phone}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">City: </span>
+              {order.user.address.city}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">Counrty: </span>
+              {order.user.address.country}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">State: </span>
+              {order.user.address.state}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold px-2">Zip: </span>
+              {order.user.address.zip}
+            </p>
           </div>
 
           <div>

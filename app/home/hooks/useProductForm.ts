@@ -8,7 +8,7 @@ import {
   ProductFormValues,
 } from "@/app/types/product";
 import { toast } from "react-toastify";
-
+import { useEffect } from "react";
 export const useProductForm = (product?: Product) => {
   const API_URL = process.env.NEXT_PUBLIC_LOCAL_URL || "";
   const isEditing = !!product;
@@ -21,14 +21,27 @@ export const useProductForm = (product?: Product) => {
       slug: product?.slug || "",
       description: product?.description || "",
       price: product?.price ?? 0,
-      categoryId: product?.category?._id || "",
-      subCategoryId: product?.subcategory?._id || "",
+      categoryId: product?.category?._id || "", // This is good for initial render
+      subCategoryId: product?.subcategory?._id || "", // This is good for initial render
       inventory: product?.inventory ?? 0,
       featured: product?.featured ?? false,
       freeShipping: product?.freeShipping ?? false,
       images: product?.images || [],
     },
   });
+
+  useEffect(() => {
+    if (product?.category?._id && form.getValues("categoryId") === "") {
+      form.setValue("categoryId", product.category._id, {
+        shouldValidate: true,
+      });
+    }
+    if (product?.subcategory?._id && form.getValues("subCategoryId") === "") {
+      form.setValue("subCategoryId", product.subcategory._id, {
+        shouldValidate: true,
+      });
+    }
+  }, [product, form]);
 
   const { images, setImages, uploadImages, removeImage, isUploading } =
     useImageUpload(product?.images);
@@ -125,6 +138,7 @@ export const useProductForm = (product?: Product) => {
           (cat: any) => cat._id === categoryIdWatched
         );
         if (!selectedCategory?.slug) return [];
+
         const res = await fetch(
           `${API_URL}categories/parent/${selectedCategory.slug}`,
           {
@@ -135,7 +149,7 @@ export const useProductForm = (product?: Product) => {
         const data = await res.json();
         return data.categories;
       },
-      enabled: !!categoryIdWatched,
+      enabled: !!categoryIdWatched && !isLoadingCategories,
     });
 
   return {
