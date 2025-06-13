@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     );
 
     const uploadRes = await fetch(
-      "http://193.203.160.16:8000/api/v1/product/uploadImage",
+      `http://${process.env.LOCAL_BACKEND_URL}/api/v1/product/uploadImage`,
       {
         method: "POST",
         body: realFormData,

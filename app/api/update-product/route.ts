@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest) {
 
     // Send product data to the actual backend API for update
     const backendRes = await fetch(
-      `http://193.203.160.16:8000/api/v1/product/${productId}`,
+      `http://${process.env.LOCAL_BACKEND_URL}/api/v1/product/${productId}`,
       {
         method: "PATCH",
         headers: {
