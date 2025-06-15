@@ -6,11 +6,8 @@ import { Button } from "@/components/ui/button";
 import CategoryCard from "./components/CategoryCard";
 import Spinner from "../components/Spinner";
 import { Category } from "@/app/types/categoty";
-import { useRouter } from "next/navigation";
 
 export default function CategoriesPage() {
-  const router = useRouter();
-
   const {
     data: categories,
     error,

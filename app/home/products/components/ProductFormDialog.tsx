@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { ProductFormDialogProps, ProductFormValues } from "@/app/types/product";
 import { ProductImageUpload } from "../../components/ImageUpload";
 import { useProductForm } from "../../hooks/useProductForm";
+import { LexicalEditor } from "../../components/LexicalEditor";
 
 export const ProductFormDialog = ({
   product,
@@ -125,12 +126,17 @@ export const ProductFormDialog = ({
             <FormField
               control={form.control}
               name="description"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} className="min-h-[120px]" />
-                  </FormControl>
+                  <LexicalEditor
+                    initialMarkdown={form.getValues("description")}
+                    onChange={(markdown) =>
+                      form.setValue("description", markdown, {
+                        shouldValidate: true,
+                      })
+                    }
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -144,6 +150,31 @@ export const ProductFormDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? null
+                              : parseFloat(e.target.value)
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Weight */}
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight (kg)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"

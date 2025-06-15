@@ -47,7 +47,10 @@ export default function ProductCard({ product }: ProductCardProps) {
     "This action cannot be undone. This will permanently delete your product and remove your data from our servers.";
 
   return (
-    <Card key={product._id} className="hover:shadow-xl transition-all">
+    <Card
+      key={product._id}
+      className="hover:shadow-xl transition-all justify-between"
+    >
       <CardHeader>
         <CardImage images={product.images} name={product.name} />
       </CardHeader>
