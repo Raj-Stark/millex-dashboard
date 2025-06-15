@@ -8,6 +8,7 @@ export const productFormSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   subCategoryId: z.string().min(1, "Subcategory is required"),
   inventory: z.number().min(0, "Inventory must be at least 0"),
+  weight: z.number().min(0, "Weight must be at least 0"),
   featured: z.boolean(),
   freeShipping: z.boolean(),
   images: z.array(z.string()).min(1, "At least one image is required"),
@@ -23,6 +24,7 @@ export interface Product {
   description: string;
   images: string[];
   inventory: number;
+  weight: number;
   category: {
     _id: string;
     name: string;

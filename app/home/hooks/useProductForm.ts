@@ -23,6 +23,7 @@ export const useProductForm = (product?: Product) => {
       price: product?.price ?? 0,
       categoryId: product?.category?._id || "", // This is good for initial render
       subCategoryId: product?.subcategory?._id || "", // This is good for initial render
+      weight: product?.weight ?? 0,
       inventory: product?.inventory ?? 0,
       featured: product?.featured ?? false,
       freeShipping: product?.freeShipping ?? false,
