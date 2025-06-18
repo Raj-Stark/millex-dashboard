@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
 
     // Forward the request to the backend login endpoint
     const backendRes = await fetch(
-      `http://${process.env.LOCAL_BACKEND_URL}/api/v1/auth/login`,
+      `${process.env.LOCAL_BACKEND_URL}/auth/login`,
       {
         method: "POST",
         headers: {

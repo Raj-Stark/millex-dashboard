@@ -15,7 +15,7 @@ export async function DELETE(req: NextRequest) {
     const cookieHeader = req.headers.get("cookie");
 
     const backendRes = await fetch(
-      `http://${process.env.LOCAL_BACKEND_URL}/api/v1/product/${productId}`,
+      `${process.env.LOCAL_BACKEND_URL}/product/${productId}`,
       {
         method: "DELETE",
         headers: {
