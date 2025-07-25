@@ -4,7 +4,6 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,21 +12,44 @@ import { Order } from "@/app/types/order";
 import { Badge } from "@/components/ui/badge";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 import { formatDate } from "@/lib/utils";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface TableComponentProps {
   orders: Order[];
   onRowClick: (id: string) => void;
 }
 
+const ITEMS_PER_PAGE = 15;
+
 export default function TableComponent({ orders }: TableComponentProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const totalAmount = orders?.reduce((sum, order) => sum + order.total, 0) || 0;
+  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+
+  const paginatedOrders = orders.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
     setDialogOpen(true);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   return (
@@ -47,7 +69,7 @@ export default function TableComponent({ orders }: TableComponentProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.map((order) => (
+            {paginatedOrders?.map((order) => (
               <TableRow
                 key={order._id}
                 className="cursor-pointer hover:bg-gray-50"
@@ -83,22 +105,51 @@ export default function TableComponent({ orders }: TableComponentProps) {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  ₹{(order.total / 100).toFixed(2)}
+                  ₹{order.total.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
-          <TableFooter className="bg-gray-100">
+          {/* <TableFooter className="bg-gray-100">
             <TableRow>
               <TableCell colSpan={4} className="text-right font-medium">
                 Total
               </TableCell>
               <TableCell className="text-right font-medium">
-                ₹{(totalAmount / 100).toFixed(2)}
+                ₹{totalAmount.toFixed(2)}
               </TableCell>
             </TableRow>
-          </TableFooter>
+          </TableFooter> */}
         </Table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-end mt-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={goToPreviousPage}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
+              />
+            </PaginationItem>
+            <PaginationItem className="px-3 flex items-center text-sm">
+              Page {currentPage} of {totalPages}
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={goToNextPage}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
 
       <OrderDetailDialog
