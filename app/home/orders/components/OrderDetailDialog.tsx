@@ -74,21 +74,42 @@ export function OrderDetailDialog({
             <h3 className="font-medium">Items</h3>
             <div className="space-y-2">
               {order.orderItems.map((item, index) => (
-                <div key={index} className="flex justify-between">
-                  <span>
-                    {item.name} × {item.amount}
-                  </span>
-                  <span>₹{((item.price * item.amount) / 100).toFixed(2)}</span>
+                <div key={index}>
+                  <div className="flex justify-between">
+                    <span>
+                      {item.name} × {item.amount}
+                    </span>
+                    <span>₹{(item.price * item.amount).toFixed(2)}</span>
+                  </div>
+                  <div key={index} className="flex flex-col justify-between">
+                    <span className="font-semibold mt-2">MetaData</span>
+                    <span>
+                      {item.metaData && JSON.stringify(item.metaData)}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Sub Total</span>
+              <span>₹{order.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping fee</span>
+              <span>₹{order.shippingFee.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax</span>
+              <span>₹{order.tax.toFixed(2)}</span>
+            </div>
+          </div>
+
           <div className="flex justify-between border-t pt-2">
             <span className="font-medium">Total</span>
-            <span className="font-medium">
-              ₹{(order.total / 100).toFixed(2)}
-            </span>
+            <span className="font-medium">₹{order.total.toFixed(2)}</span>
           </div>
 
           <div>

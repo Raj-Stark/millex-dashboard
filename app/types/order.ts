@@ -10,6 +10,7 @@ export interface Order {
     price: number;
     amount: number;
     product: string;
+    metaData: object;
     _id: string;
   }[];
   status: string;

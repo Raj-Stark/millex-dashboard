@@ -23,7 +23,7 @@ export default function OrdersPage() {
       });
 
       const data = await res.json();
-      return data.orders;
+      return data.orders.reverse();
     },
   });
 
